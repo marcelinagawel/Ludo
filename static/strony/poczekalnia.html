@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chińczyk</title>
+
+    <script type="module">
+        //Cannot use import statement outside a module
+
+        import { dane_konf } from '../js/dane_konf.js'
+
+        var pokoj_do_gry = {
+
+            gracz: {},                                  //info o graczu
+            gracze_w_tablice_wrzuceni: [],              //wszyscy beda zapisywani w tabeli zeby bylo ile ich jest
+
+
+            start_pokoju(koncowe) {
+
+                window.location.href = "/gra"           //jak jest start pokoju to przekieruj do gry
+            },
+
+
+
+            start_poczekalni() {
+
+                pokoj_do_gry.wyszukani_gracze().then(v => setTimeout(() => {    //jak znalezli juz tych graczy to granie
+                    this.start_poczekalni()
+                },
+                    10))                                //jak szybko przechodzimy juz do planszy gry
+            },
+
+
+
+
+
+            async znaleziony_chetny(e) {
+
+                var chce_grac = "/chce_grac"                    //ustaw jako chcacy grac
+
+                e.target.disabled = false                       //nie blokujemy switcha -> moze sie rozmyslec
+
+                new dane_konf(null, {
+
+                    change: e.target.checked                     //ustaw jako zaznaczony, chce grac
+                },
+
+
+
+                    chce_grac, null).wysylanie().then((val) => {
+
+                        e.target.disabled = false               //nie blokujemy switcha -> moze sie rozmyslec
+                    })
+            },
+
+
+
+
+
+            async wyszukani_gracze() {
+
+                var wyszukany_uzytkownik = await new Promise(async (success, er) => {    //tworze nowa obietnice 
+
+
+
+                    var dodany_nowy_uzytkownik_go = "/dodany_nowy_uzytkownik"            //dodanyt nowy uzytkownik
+                    var typki_w_pokoju = new dane_konf(null, null, dodany_nowy_uzytkownik_go, null) //kto jest juz w pokoju
+
+                    var koncowe = await typki_w_pokoju.dynamiczne_polaczenie()          //koncowa wartosc
+
+
+
+                    //czy jest wgl ktokolwiek nowy
+                    if (await koncowe.players.length !== this.gracze_w_tablice_wrzuceni.length) {
+
+
+                        koncowe.players.forEach((index, counter) => {   //jak sie nie zgadzaja wartosci to doszedl ktos
+                            if (JSON.stringify(index) !== JSON.stringify(this.gracze_w_tablice_wrzuceni[counter])) {
+
+                                this.zrob_typka_co_doszedl(index, koncowe.gracz, koncowe.chce_grac)     //zrob tego gracza co doszedl 
+                            }
+                        })
+
+                        this.gracze_w_tablice_wrzuceni = koncowe.players        //zaktualizuj wartosci
+                    }
+
+
+
+
+                    //czy wgl ktokolwiek chce grac
+                    if (await koncowe.chce_grac != [])              //nikt nie chce grac
+
+                        Object.keys(this.gracz).forEach((element, counter) => {
+
+                            this.gracz[element].granko = (koncowe.chce_grac.includes(element)) ? true : false
+                            //gra to gra a jak nie gra to idzie grac skoro chce
+                            this.gracz[element].input.checked = (koncowe.chce_grac.includes(element)) ? true : false
+                        })
+
+
+                    //jak jest koncowych wiecej lub 2 to ida grac alboi jak jest 4 koncowych to start gra
+                    if (koncowe.chce_grac.length >= 2 || this.gracze_w_tablice_wrzuceni.length == 4) {
+
+                        pokoj_do_gry.start_pokoju(await koncowe)    //start pokoju
+                    }
+
+
+                    else {
+                        success(await koncowe)
+                    }
+                })
+                return wyszukany_uzytkownik
+            },
+
+
+
+
+            zrob_typka_co_doszedl(user, gracz, chce_grac) {
+
+                //z htmla kopiuje dany węzeł i zwraca referencję do nowej kopii
+                var template = document.querySelector('template').cloneNode(true)
+
+
+
+                var kolorki_gracza_z_tablicy = template.content.children[0]
+
+                //tutaj kolorek zeby szedl do cssa zeby byly takie tla jak gracz ma kolor
+                kolorki_gracza_z_tablicy.style.backgroundColor = user.color
+
+
+                var imie_gracza = document.createTextNode(user.nickname)  //zapisz imie gracza w znaczniku 
+                kolorki_gracza_z_tablicy.querySelector('h1').appendChild(imie_gracza) //wsadz tam dynamicznie
+
+
+
+
+
+                if (user.nickname === gracz.nickname) {
+                    kolorki_gracza_z_tablicy.querySelector('input').disabled = false    //switche
+
+                    kolorki_gracza_z_tablicy.querySelector('input').addEventListener('change', this.znaleziony_chetny)
+                }
+
+
+
+                if (chce_grac.includes(user.nickname)) {
+
+                    kolorki_gracza_z_tablicy.querySelector('input').checked = true  //jak chce grac to musi byc zaznaczony
+                }
+
+
+                this.gracz[user.nickname] = {
+                    input: kolorki_gracza_z_tablicy.querySelector('input'),        //gracz zapisane info z inputa czy chce grac czy nie
+                    granko: chce_grac.includes(user.nickname)               //chce grac tez ten uzytkownik
+                }
+
+                document.querySelector('.pudelko').appendChild(template.content)        //pudelko poczekalni z htmla
+            },
+        }
+
+
+        window.addEventListener('DOMContentLoaded', () => {
+            pokoj_do_gry.start_poczekalni()
+        })
+    </script>
+    <style>
+        body {
+            width: 100vw;
+            height: 100vh;
+            /* background-color: #d1b689; */
+            background-color: black;
+            color: white;
+            font-size: 15px;
+        }
+
+        h1 {
+            font-size: 20px;
+        }
+
+        .nowy_uzytkownik .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+            margin-top: 20px;
+        }
+
+        .nowy_uzytkownik {
+            background-color: black;
+            border: 2px solid white;
+            border-radius: 100px;
+            text-align: center;
+            margin-top: 200px;
+            margin-left: 200px;
+            width: 130px;
+            height: 50px;
+            float: left;
+        }
+
+        .nowy_uzytkownik .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgb(68, 68, 68);
+            -webkit-transition: 0.4s;
+            transition: 0.4s;
+        }
+
+        .nowy_uzytkownik .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: 0.4s;
+            transition: 0.4s;
+        }
+
+        .nowy_uzytkownik input:checked+.slider {
+            background-color: rgb(206, 206, 206);
+        }
+
+        .nowy_uzytkownik input:checked+.slider:before {
+            -webkit-transform: translateX(13px);
+            -ms-transform: translateX(13px);
+            transform: translateX(13px);
+        }
+    </style>
+</head>
+
+<body>
+    <template>
+        <div class="nowy_uzytkownik">
+            <h1></h1>
+            <label class="switch">
+                <input type="checkbox" disabled>
+                <span class="slider"></span>
+            </label>
+    </template>
+
+    <div class="pudelko"></div>
+</body>
+
+</html>

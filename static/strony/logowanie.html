@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chińczyk</title>
+
+    <script type="module">
+        import { dane_konf } from '/js/dane_konf.js'        //zaimportuj
+
+
+        window.addEventListener('DOMContentLoaded', () => {         //dodaj listenera na buttona
+
+            document.querySelector('button').addEventListener('click', zaczecie_gry)  //zaczecie gry
+
+        })
+
+
+
+
+        async function zaczecie_gry() {
+
+            var dodaj_nowego_uzytkownika = "/dodaj_nowego_uzytkownika"
+
+            var nazwy_graczy = Array.from(document.querySelectorAll('input'))   //zrob tablice z inputa na wpisywanie nazwy gracza
+            var info_o_graczu = {}          //obiekt z info o graczu glownie teraz sie rozchodzi o nazwe wprowadzona
+
+            var wszystko_jest_git = true        //jak sie nazwy beda zgadzac z wymogami to wyslane bedzie
+
+            try {
+                nazwy_graczy.forEach((element, count) => {
+
+                    if (element.value === "") {     //jak wartosc elementu podanego w impucie bedzie pusta no to nie wejdzie
+
+                        wszystko_jest_git = false       //nie jest git i nie wysylaj
+                        throw alert("Podaj nazwe gracza")   //alert z info
+                    }
+
+                    else {
+
+                        info_o_graczu = { nickname: element.value } //jak wszystko git (nie jest puste) to ustaw to nick graczowi
+                        element.value
+
+                    }
+                })
+
+            }
+
+            catch (err) { }
+
+
+
+            if (wszystko_jest_git) {                    //wszystko jest git czyli wyslanie
+
+                var pobrany_serwer_zadnie = new dane_konf(null, info_o_graczu, dodaj_nowego_uzytkownika)  //wez te dane 
+
+                var pobrany_serwer_odpowiedz = await pobrany_serwer_zadnie.wysylanie()   //wyslij dane 
+
+                await wyslanie_info_do_poczekalni(await pobrany_serwer_odpowiedz)   //zium do wyslania do poczekalni i tam dalej akcja
+            }
+        }
+
+
+        function wyslanie_info_do_poczekalni(respond) {     //tutaj akcja
+
+            if (respond.redirect) {     //przekierowanie tej odp do poczekalni i tam sobie czeka
+
+                window.localStorage.setItem("znaleziony_pokoj_id", respond.znaleziony_pokoj_id)
+                window.location.href = "/poczekalnia"
+            }
+
+        }
+    </script>
+    <style>
+        body {
+            height: 100vh;
+            text-align: center;
+            overflow: hidden !important;
+            /* background-color: #d1b689; */
+            color: white;
+            background-color: black;
+            font-size: 20px;
+        }
+
+        #poczekalnia_box {
+            position: absolute;
+            margin-top: 300px;
+            margin-left: 35%;
+            line-height: 50px;
+        }
+
+        input {
+            width: 200px;
+            height: 25px;
+        }
+
+        button {
+            width: 40px;
+            height: 30px;
+            border-radius: 40px;
+            /* border: 1px solid black; */
+            border: 1px solid red;
+            color: white;
+            background-color: transparent;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="poczekalnia_box">
+        <label for="nickname">Twój nick: </label>
+        <input placeholder="Twój nick" name="nickName" type="text" name="" id="">
+        <button>Ok</button>
+    </div>
+</body>
+
+</html>
+
+
+<!-- 
+XIX:
+		- maksimum czterech klientów tworzy jeden pokój
+		- kolejna czwórka - kolejny pokój
+		- klienci są dodawani do wolnego pokoju
+		- klient ma możliwość zaznaczenia, że jest gotów do gry - gdy min. 2 gotowych - nie czekamy na resztę.
+
+XXI:
+		1. Można wyjść na pierwsze pole tylko mając 6 lub 1
+		2. Wejść do "domku" można tylko mając odpowiednią ilość oczek
+		3. Zbijanie przeciwnika
+		4. Na jednym polu może stać dowolna ilość pionów tego samego koloru (z wyjątkiem "domku")
+		- podpowiedź dostępych do ruchu pionków (migają i tylko one mają cursor pointer)
+		- wskazanie gdzie ewentualny pion się pojawi po jego wyborze (różowy "placek")
+		d) wywalanie gracza po dojściu czasu do 0 (lub ruch za niego, lub utrata kolejki)
+
+XXII:
+		W projekcie dodajemy odczytywanie w wybranym języku wylosowanej cyfry.
+
+
+Elementy konstrukcyjne:
+	0.4 - projekt w całości wykonany z użyciem Klas (proszę o sensowny podział kodu - by nie był cały w jednej metodzie...)
+	0.2 - zahostowany
+	0.2 - stosowanie modułów
+	0.2 - cykliczne zapytania Ajax, klient renderuje częśc kliencką w opariu o dane z serwera
+
+Elementy gry:
+	2p - dynamiczne pokoje (testuj u mnie)
+	0.5p - rzut kostką (odpowiednia grafika) wraz z syntezatorem
+	1p - rozpoczęcie gry (1 lub 6), chodzenie w koło po rzucie kostką
+	1.5p - zbijanie
+	1p - możliwość ukończenia gry (min. do pierwszego gracza który skończy)
+	1p - przekroczenie czasu
+	1p - zachowanie pionów + ruch
+
+
+Ocenianie:
+    warunek konieczny - gra online (min. 2 graczy na różnych komputerach gra jedną rozgrywkę)
+
+    ocena = punkty_za_elementy_gry * punkty_ze_elementy_kontrukcyjne
+    np. cała gra zrobiona, wyknana na klasach => 8 * 0.4 = 3.2p
+
+    w bazie oceniam "kulturalnie", nie kombinuję w konsoli - gram, ale klikam "ile wlezie".
+    bonus 1.5p -> przywracanie stanu gry po odświeżeniu/zamknięciu zakładki, 
+
+
+
+//----------- OCENA -------------:
+8 * 1 = 8 max 
+
+Elementy konstrukcyjne:
+	0.4 - projekt w całości wykonany z użyciem Klas
+	0.2 - zahostowany
+	0.2 - stosowanie modułów
+	0.2 - cykliczne zapytania Ajax, klient renderuje częśc kliencką w opariu o dane z serwera
+
+Elementy gry:
+	2p - dynamiczne pokoje (testuj u mnie)
+	0.5p - rzut kostką (odpowiednia grafika) wraz z syntezatorem
+[X]	1p - rozpoczęcie gry (1 lub 6), chodzenie w koło po rzucie kostką
+	1.5p - zbijanie
+[X]	1p - możliwość ukończenia gry (min. do pierwszego gracza który skończy)
+	1p - przekroczenie czasu
+	1p - zachowanie pionów + ruch
+
+bonus 1.5p -> przywracanie stanu gry po odświeżeniu/zamknięciu zakładki, 
+
+
+
+
+
+------------- BUGI --------------:
+- przy pierwszym odpaleniu gry nie pokazuje sie button rzutu kostka ale wystarczy odswiezyc strone i juz jest (pozniej problem nie wystepuje)
+-->

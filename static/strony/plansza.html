@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Chińczyk</title>
+
+    <script type="module" src=" /js/akcja.js"></script>
+
+    <style>
+        body {
+            /* background-color: #d1b689; */
+            background-color: black;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+        }
+
+        canvas {
+            /* margin-top: 150px; */
+            margin-left: 300px;
+        }
+
+
+        h1 {
+            font-size: 20px;
+            color: white;
+            margin-top: 0px;
+        }
+
+
+        .pole {
+            position: absolute;
+            background-image: url("./strony/tlo.png");
+            z-index: 10;
+            background-size: 600px;
+            background-repeat: no-repeat;
+            margin-top: 150px;
+            margin-left: 400px;
+        }
+
+        .pole div {
+            /* border: 2px solid red; */
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            position: absolute;
+            width: 35px;
+            height: 35px;
+        }
+
+        .gracze_menu {
+            font-size: 15px;
+            background-color: rgb(255, 255, 255);
+            /* top: 0; */
+            border: 5px solid transparent;
+            /* color: black; */
+            border-radius: 50px;
+            width: 100px;
+            height: 50px;
+            line-height: 50px;
+            float: left;
+            margin-left: 50px;
+            margin-top: 20px;
+            /* margin-top: -150px; */
+            text-align: center;
+            border: 2px solid white;
+        }
+
+        #czas {
+            background-color: red;
+            width: 30px;
+            height: 30px;
+            margin-left: 80px;
+            margin-top: -65px;
+            font-weight: bold;
+            line-height: 30px;
+            border-radius: 20px;
+            border: 2px solid white;
+        }
+
+
+
+
+        .kostka_box {
+            margin-top: 100px;
+            margin-left: 90px;
+            position: absolute;
+            width: 100px;
+            height: 100px;
+        }
+
+        .kostka {
+            margin-top: 100px;
+            margin-left: 90px;
+            position: absolute;
+            width: 100px;
+            height: 100px;
+        }
+
+        #tlo {
+            background-color: #d1b689;
+            width: 400px;
+            height: 600px;
+            position: absolute;
+            margin-top: 150px;
+            margin-left: 50px;
+        }
+
+        .gracze_menu h3,
+        .gracze_menu span {
+            display: inline;
+            color: white;
+        }
+
+        .gracze_menu button {
+            border: none;
+            left: 0;
+            margin-left: 180px;
+            padding: 10px;
+            font-size: 15px;
+            visibility: hidden;
+            position: absolute;
+            margin-top: 280px;
+        }
+
+        .gracze_menu button:hover {
+            cursor: pointer;
+        }
+    </style>
+
+</head>
+
+<body>
+    <template>
+        <div class="gracze_menu">
+            <div>
+                <h1></h1>
+            </div>
+            <div id="czas"><span>00:59</span></div>
+            <button>Rzuć kostką</button>
+        </div>
+    </template>
+
+    <div class="players">
+        <div id="tlo"></div>
+        <div class="kostka_box">
+            <img src="/static/img/empty.png" class="kostka">
+        </div>
+    </div>
+
+    <div class="canvas">
+        <div class="pole"></div>
+    </div>
+
+
+</body>
+
+</html>
