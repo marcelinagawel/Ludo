@@ -1,9 +1,12 @@
 {
   "name": "chinczyk",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-session": "^1.17.1",
+    "nedb": "^1.8.0",
     "node": "^15.14.0"
   },
   "devDependencies": {},
@@ -12,5 +15,14 @@
     "start": "node server.js"
   },
   "author": "MG",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcelinagawel/chinczyk2.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcelinagawel/chinczyk2/issues"
+  },
+  "homepage": "https://github.com/marcelinagawel/chinczyk2#readme",
+  "description": ""
 }
